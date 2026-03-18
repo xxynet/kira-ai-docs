@@ -1,0 +1,57 @@
+# 用于构建和部署VitePress文档到GitHub Pages的Workflow
+
+name: Deploy VitePress Site to GitHub Pages
+
+on:
+  # 当推送或合并到main分支时触发
+  push:
+    branches: [main]
+  # 允许从GitHub Actions页面手动触发
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write # 允许写入GitHub Pages
+      id-token: write # 允许使用GitHub的OIDC认证
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # 检出代码
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 设置Node.js环境
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      # 安装依赖
+      - name: Install dependencies
+        run: npm ci
+
+      # 构建文档
+      - name: Build site
+        run: npm run build
+
+      # 配置GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # 上传构建产物
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+      # 部署到GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
