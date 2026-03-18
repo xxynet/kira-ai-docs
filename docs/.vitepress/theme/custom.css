@@ -1,0 +1,15 @@
+/* 确保所有链接都应用悬停颜色 */
+.sidebar-link:hover,
+.VPSidebar a:hover {
+  color: var(--vp-c-brand) !important;
+}
+
+.vp-doc a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.vp-doc a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
