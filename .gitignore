@@ -11,8 +11,8 @@ lerna-debug.log*
 node_modules
 
 # Build outputs
-.vitepress/dist
-.vitepress/.temp
+docs/.vitepress/dist
+docs/.vitepress/.temp
 
 # Editor directories and files
 .vscode/*
