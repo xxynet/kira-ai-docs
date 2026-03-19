@@ -18,7 +18,7 @@ hero:
       link: /en/deployment/windows
     - theme: alt
       text: Plugin Development
-      link: /en/development/guide
+      link: /en/development/plugins
 
 features:
   - icon: 🚀
