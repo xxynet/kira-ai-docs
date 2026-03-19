@@ -1,3 +1,3 @@
-# 适配器开发指南
+# Adapter Development Guide
 
-> 文档施工中
+> Documentation under construction

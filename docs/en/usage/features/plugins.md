@@ -1,15 +1,15 @@
-# 插件系统
+# Plugin System
 
-KiraAI支持丰富的插件扩展，让您可以轻松定制和增强AI数字生命的功能。
+KiraAI supports rich plugin extensions, allowing you to easily customize and enhance the functionality of AI digital life.
 
-## 什么是插件？
+## What is a Plugin?
 
-插件是一种模块化的扩展，允许您向KiraAI添加新功能，而无需修改核心代码。每个插件都可以提供特定的功能，扩展数字生命的能力边界。
+A plugin is a modular extension that allows you to add new features to KiraAI without modifying the core code. Each plugin can provide specific functionality, expanding the capabilities of digital life.
 
-## 插件功能
+## Plugin Features
 
-> 文档施工中
+> Documentation under construction
 
-## 插件开发
+## Plugin Development
 
-您可以根据[插件开发指南](/development/development)开发自己的插件。
+You can develop your own plugins according to the [Plugin Development Guide](/development/development).

@@ -1,19 +1,19 @@
-# 手动部署
+# Manual Deployment
 
-如果您需要更灵活的部署方式，可以选择手动部署KiraAI到服务器。
+If you need a more flexible deployment method, you can choose to manually deploy KiraAI to your server.
 
-## 系统要求
+## System Requirements
 
-- 操作系统：Ubuntu 20.04+ / CentOS 8+ / Debian 11+ / Windows Server
-- CPU：至少2核
-- 内存：至少4GB
-- 磁盘：至少20GB可用空间
-- 网络：可以访问外网
+- Operating System: Ubuntu 20.04+ / CentOS 8+ / Debian 11+ / Windows Server
+- CPU: At least 2 cores
+- Memory: At least 4GB
+- Disk: At least 20GB available space
+- Network: Can access the external network
 - Python 3.10+
 
-## 部署步骤
+## Deployment Steps
 
-### 1. 系统更新与Python安装
+### 1. System Update and Python Installation
 
 ```bash
 # Ubuntu/Debian
@@ -25,20 +25,20 @@ yum update -y
 yum install python3 python3-pip python3-venv git -y
 ```
 
-### 2. 克隆项目代码
+### 2. Clone Project Code
 
 ```bash
 git clone https://github.com/xxynet/KiraAI.git
 cd KiraAI
 ```
 
-### 3. 创建并激活虚拟环境
+### 3. Create and Activate Virtual Environment
 
 ```bash
-# 创建虚拟环境
+# Create virtual environment
 python3 -m venv venv
 
-# 激活虚拟环境
+# Activate virtual environment
 # Ubuntu/Debian/CentOS
 source venv/bin/activate
 
@@ -46,20 +46,20 @@ source venv/bin/activate
 venv\Scripts\activate
 ```
 
-### 4. 安装依赖
+### 4. Install Dependencies
 
 ```bash
-# 安装项目依赖
+# Install project dependencies
 pip install -r requirements.txt
 ```
 
-### 5. 启动项目
+### 5. Start the Project
 
 ```bash
-# 启动项目
+# Start the project
 python main.py
 
-# 或使用脚本启动
+# Or start with script
 # Ubuntu/Debian/CentOS
 chmod +x scripts/run.sh
 ./scripts/run.sh
@@ -68,20 +68,20 @@ chmod +x scripts/run.sh
 scripts\run.bat
 ```
 
-### 6. 访问Web管理界面
+### 6. Access Web Management Interface
 
-启动项目后，通过浏览器访问Web管理界面进行配置。
+After starting the project, access the Web management interface through a browser for configuration.
 
-## 注意事项
+## Notes
 
-- 确保防火墙允许项目使用的端口
-- 定期备份配置文件和数据
-- 及时更新项目代码到最新版本
-- 建议在生产环境中使用进程管理工具（如PM2、systemd等）来管理服务
+- Ensure the firewall allows the ports used by the project
+- Regularly back up configuration files and data
+- Timely update project code to the latest version
+- It is recommended to use process management tools (such as PM2, systemd, etc.) to manage services in production environments
 
-## 故障排查
+## Troubleshooting
 
-- 检查Python版本是否符合要求（3.10+）
-- 确保虚拟环境已正确激活
-- 查看项目日志以定位错误信息
-- 检查网络连接是否正常，特别是LLM服务提供商的连接
+- Check if Python version meets requirements (3.10+)
+- Ensure the virtual environment is properly activated
+- View project logs to locate error information
+- Check if the network connection is normal, especially the connection to LLM service providers

@@ -1,23 +1,23 @@
-# Zeabur部署
+# Zeabur Deployment
 
-Zeabur 是一个云部署平台（PaaS），它提供了简单、快速的方式来部署和管理应用程序。每月提供5美元的免费额度，详情见[Zeabur定价](https://zeabur.com/docs/zh-CN/billing/pricing)
+Zeabur is a cloud deployment platform (PaaS) that provides a simple and fast way to deploy and manage applications. It offers a $5 free credit per month. For details, see [Zeabur Pricing](https://zeabur.com/docs/en-US/billing/pricing)
 
-## 1. 注册Zeabur账号
+## 1. Register a Zeabur Account
 
-1. 访问[Zeabur官网](https://zeabur.com/)，点击"注册"按钮。
-2. 填写您的邮箱、用户名和密码，完成注册。
-3. 登录您的Zeabur账号。
+1. Visit the [Zeabur official website](https://zeabur.com/) and click the "Sign Up" button.
+2. Fill in your email, username, and password to complete the registration.
+3. Log in to your Zeabur account.
 
-## 2. 创建新项目
+## 2. Create a New Project
 
-1. 在Zeabur平台上，点击"新建项目"按钮。
-2. 输入项目名称，例如"KiraAI"，点击"创建"按钮。
+1. On the Zeabur platform, click the "New Project" button.
+2. Enter the project name, such as "KiraAI", and click the "Create" button.
 
-## 3. 部署KiraAI
+## 3. Deploy KiraAI
 
-1. 在项目页面，点击"部署"按钮。
-2. 选择"从Docker镜像部署"。
-3. 输入KiraAI的Docker镜像URL：`xxynet/kira-ai:latest`
-4. 映射端口：将容器端口5267映射到主机端口5267。
-5. volume：将`data`目录挂载到容器的`/app/data`目录。
-6. 点击"部署"按钮。
+1. On the project page, click the "Deploy" button.
+2. Select "Deploy from Docker Image".
+3. Enter the Docker image URL for KiraAI: `xxynet/kira-ai:latest`
+4. Map ports: Map container port 5267 to host port 5267.
+5. Volume: Mount the `data` directory to the container's `/app/data` directory.
+6. Click the "Deploy" button.

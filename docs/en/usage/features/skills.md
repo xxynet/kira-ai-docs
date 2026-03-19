@@ -1,3 +1,3 @@
-# Skills 功能
+# Skills Feature
 
-> 功能开发中
+> Feature under development

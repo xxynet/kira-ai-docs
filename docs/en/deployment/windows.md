@@ -1,110 +1,110 @@
-# Windows部署
+# Windows Deployment
 
-本指南将帮助您在Windows系统上部署KiraAI。
+This guide will help you deploy KiraAI on Windows systems.
 
-## 系统要求
+## System Requirements
 
 - Windows 10/11
-- Python 3.10+（推荐3.10-3.12）
-- 网络连接
+- Python 3.10+ (recommended 3.10-3.12)
+- Network connection
 
-## 安装步骤
+## Installation Steps
 
-### 1. 安装Python
+### 1. Install Python
 
-1. 访问[Python官网](https://www.python.org/downloads/windows/)下载Python 3.10或更高版本
-2. 运行安装程序，确保勾选"Add Python to PATH"
-3. 完成安装后，打开命令提示符或PowerShell验证安装：
+1. Visit the [Python official website](https://www.python.org/downloads/windows/) to download Python 3.10 or higher
+2. Run the installer and make sure to check "Add Python to PATH"
+3. After installation is complete, open Command Prompt or PowerShell to verify the installation:
 
 ```powershell
 python --version
 pip --version
 ```
 
-### 2. 安装Git（可选）
+### 2. Install Git (Optional)
 
-如果您需要使用Git克隆项目：
+If you need to use Git to clone the project:
 
-1. 访问[Git官网](https://git-scm.com/download/win)下载Git
-2. 运行安装程序，使用默认选项即可
-3. 验证安装：
+1. Visit the [Git official website](https://git-scm.com/download/win) to download Git
+2. Run the installer and use the default options
+3. Verify the installation:
 
 ```powershell
 git --version
 ```
 
-### 3. 获取KiraAI
+### 3. Get KiraAI
 
-#### 方式一：使用Git克隆（推荐）
+#### Method 1: Clone using Git (Recommended)
 
 ```powershell
 git clone https://github.com/xxynet/KiraAI.git
 cd KiraAI
 ```
 
-#### 方式二：直接下载ZIP文件
+#### Method 2: Download ZIP file directly
 
-1. 访问[KiraAI GitHub仓库](https://github.com/xxynet/KiraAI)
-2. 点击"Code"按钮，选择"Download ZIP"
-3. 解压ZIP文件到您选择的目录
-4. 打开命令提示符或PowerShell，进入解压后的目录
+1. Visit the [KiraAI GitHub repository](https://github.com/xxynet/KiraAI)
+2. Click the "Code" button and select "Download ZIP"
+3. Extract the ZIP file to the directory of your choice
+4. Open Command Prompt or PowerShell and navigate to the extracted directory
 
-### 4. 创建虚拟环境和安装依赖
+### 4. Create Virtual Environment and Install Dependencies
 
-### 5. 启动服务
+### 5. Start the Service
 
-方式一：使用脚本启动（推荐）
+Method 1: Start with Script (Recommended)
 
 ```powershell
 scripts\run.bat
 ```
 
-方式二：直接启动
+Method 2: Start Directly
 
 ```powershell
-# 创建虚拟环境
+# Create virtual environment
 python -m venv venv
 
-# 激活虚拟环境
+# Activate virtual environment
 venv\Scripts\activate
 
-# 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 
 python main.py
 ```
 
-## 访问KiraAI
+## Access KiraAI
 
-部署完成后，您可以通过以下地址访问KiraAI的Web管理界面：
+After deployment is complete, you can access KiraAI's Web management interface through the following address:
 <a href="http://localhost:5267" target="_blank" rel="noreferrer">http://localhost:5267</a>
-如果是远程访问，将localhost替换为服务器IP地址。
+If accessing remotely, replace localhost with the server IP address.
 
-## 注意事项
+## Notes
 
-- 确保防火墙允许5267端口（或您配置的其他端口）
-- 建议使用虚拟环境来隔离项目依赖
-- 定期更新项目代码以获取最新功能和安全修复
+- Ensure the firewall allows port 5267 (or other ports you configured)
+- It is recommended to use a virtual environment to isolate project dependencies
+- Regularly update project code to get the latest features and security fixes
 
-## 故障排查
+## Troubleshooting
 
-- 检查Python版本是否符合要求：`python --version`
-- 确保虚拟环境已正确激活：`venv\Scripts\activate`
-- 查看项目日志以定位错误
-- 检查端口是否被其他服务占用：`netstat -ano | findstr :5267`
-- 如果遇到权限问题，尝试以管理员身份运行命令提示符或PowerShell
+- Check if Python version meets requirements: `python --version`
+- Ensure the virtual environment is properly activated: `venv\Scripts\activate`
+- View project logs to locate errors
+- Check if the port is occupied by other services: `netstat -ano | findstr :5267`
+- If you encounter permission issues, try running Command Prompt or PowerShell as administrator
 
-## 常见问题
+## Common Issues
 
-1. **无法激活虚拟环境**
-   - 确保使用正确的路径：`venv\Scripts\activate`
-   - 如果遇到执行策略问题，运行：`Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+1. **Unable to activate virtual environment**
+   - Ensure you are using the correct path: `venv\Scripts\activate`
+   - If you encounter execution policy issues, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
 
-2. **依赖安装失败**
-   - 尝试更新pip：`pip install --upgrade pip`
-   - 确保网络连接正常
-   - 检查requirements.txt文件是否存在
+2. **Dependency installation failed**
+   - Try updating pip: `pip install --upgrade pip`
+   - Ensure network connection is normal
+   - Check if requirements.txt file exists
 
-3. **端口被占用**
-   - 查找占用端口的进程：`netstat -ano | findstr :5267`
-   - 终止占用端口的进程：`taskkill /PID <进程ID> /F`
+3. **Port is occupied**
+   - Find the process occupying the port: `netstat -ano | findstr :5267`
+   - Terminate the process occupying the port: `taskkill /PID <Process ID> /F`

@@ -1,39 +1,39 @@
-# KiraAI 介绍
+# Introduction to KiraAI
 
-## 什么是KiraAI？
+## What is KiraAI?
 
-KiraAI是一个模块化、跨平台的 AI 数字生命项目，以数字生命为中心，连接大语言模型（LLM）与多种聊天平台（QQ、Telegram 等）。
+KiraAI is a modular, cross-platform AI digital life project centered around digital life, connecting large language models (LLMs) with various chat platforms (QQ, Telegram, etc.).
 
-KiraAI 的目标不是创建个人 AI 助手，而是创建一个能像人类一样互动、发言、与外部交互的数字生命。
+The goal of KiraAI is not to create a personal AI assistant, but to create a digital life that can interact, speak, and interact with the outside world like a human.
 
 ::: tip
-您可以进入 [快速开始](quickstart.md) 来了解如何快速部署和配置 KiraAI。
+You can enter [Quick Start](/en/guide/quickstart) to learn how to quickly deploy and configure KiraAI.
 :::
 
-## 核心特性
+## Core Features
 
-与传统的 ChatBot 不同，KiraAI 针对拟人场景进行特殊优化。
+Unlike traditional ChatBots, KiraAI is specially optimized for anthropomorphic scenarios.
 
-### 1. 消息处理流程
+### 1. Message Processing Flow
 
-传统 ChatBot 的消息处理流程为：
+The message processing flow of traditional ChatBots is:
 ```
-接收用户消息 -> 传给 LLM 进行处理 -> 接收 LLM 的回复 -> 将回复发送给用户
+Receive user message -> Pass to LLM for processing -> Receive LLM's reply -> Send reply to user
 ```
 
-然而，一句一回的模式较为死板，人类往往会一次性查看多条消息，结合上下文进行回复。为了更好地模拟人类对话，KiraAI 采用了消息缓冲机制：
-- 接收用户消息
-- 由插件决定消息处理策略（缓存，直接调用 LLM，丢弃等）
-- 当需要调用大模型进行回复时，会将缓存的消息一并发送给大模型处理。
+However, the one-question-one-answer mode is relatively rigid. Humans often view multiple messages at once and reply based on context. To better simulate human dialogue, KiraAI adopts a message buffering mechanism:
+- Receive user messages
+- Plugins determine message processing strategies (caching, direct LLM calls, discarding, etc.)
+- When needing to call the LLM for a reply, the cached messages are sent to the LLM for processing together.
 
-### 2. 消息发送
+### 2. Message Sending
 
-KiraAI 不直接将大模型的文本回复发送给用户，而是让大模型使用 XML 组织消息内容。因此，AI可以很灵活的组合不同消息元素，如文本、图片、语音等。同时单次回复也不局限于一条消息，或基于规则的消息分段，而是由 AI 自己完全掌控发送几条消息，每条消息发什么。
+KiraAI does not directly send the text reply from the LLM to the user. Instead, it allows the LLM to organize message content using XML. Therefore, the AI can flexibly combine different message elements such as text, images, voice, etc. At the same time, a single reply is not limited to one message or rule-based message segmentation, but the AI has full control over how many messages to send and what each message contains.
 
-## 开源协议
+## Open Source License
 
-KiraAI采用 AGPL-3.0 开源协议，欢迎社区贡献和使用。
+KiraAI adopts the AGPL-3.0 open source license, and community contributions and usage are welcome.
 
 ::: info
-本项目在活跃开发期间，可能会有 **破坏性更新**。请在更新前备份您的配置文件和数据。
+During active development of this project, there may be **breaking updates**. Please back up your configuration files and data before updating.
 :::

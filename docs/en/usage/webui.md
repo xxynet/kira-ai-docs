@@ -1,7 +1,7 @@
-# WebUI 使用指南
+# WebUI Usage Guide
 
-KiraAI提供了一个直观的Web管理界面，帮助您轻松管理和配置AI数字生命。
+KiraAI provides an intuitive Web management interface to help you easily manage and configure AI digital life.
 
-## 访问WebUI
+## Accessing WebUI
 
-> 文档施工中
+> Documentation under construction

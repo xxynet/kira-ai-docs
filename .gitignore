@@ -13,6 +13,7 @@ node_modules
 # Build outputs
 docs/.vitepress/dist
 docs/.vitepress/.temp
+docs/.vitepress/cache
 
 # Editor directories and files
 .vscode/*

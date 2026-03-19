@@ -1,3 +1,3 @@
-# MCP 功能
+# MCP Feature
 
-> 文档施工中
+> Documentation under construction

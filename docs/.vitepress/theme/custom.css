@@ -1,15 +1,63 @@
-/* 确保所有链接都应用悬停颜色 */
-.sidebar-link:hover,
-.VPSidebar a:hover {
-  color: var(--vp-c-brand) !important;
+:root {
+  /* 主色（最常用） */
+  --vp-c-brand-1: #3eaf7c;
+
+  /* hover / 强调 */
+  --vp-c-brand-2: #4abf8a;
+
+  /* 更亮一点（背景 / 渐变） */
+  --vp-c-brand-3: #6bd6a3;
 }
 
-.vp-doc a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.vp-doc .custom-block {
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid var(--vp-c-divider);
+  background-color: rgba(60, 60, 60, 0.2);
 }
 
-.vp-doc a:hover {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+/* 标题 */
+.vp-doc .custom-block .custom-block-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+/* TIP */
+.vp-doc .custom-block.tip {
+  border-color: #3eaf7c;
+  background-color: rgba(62, 175, 124, 0.12);
+}
+
+.vp-doc .custom-block.tip .custom-block-title {
+  color: #3eaf7c;
+}
+
+/* INFO */
+.vp-doc .custom-block.info {
+  border-color: #4cb3ff;
+  background-color: rgba(76, 179, 255, 0.12);
+}
+
+.vp-doc .custom-block.info .custom-block-title {
+  color: #4cb3ff;
+}
+
+/* WARNING */
+.vp-doc .custom-block.warning {
+  border-color: #e6a23c;
+  background-color: rgba(230, 162, 60, 0.12);
+}
+
+.vp-doc .custom-block.warning .custom-block-title {
+  color: #e6a23c;
+}
+
+/* DANGER */
+.vp-doc .custom-block.danger {
+  border-color: #f56c6c;
+  background-color: rgba(245, 108, 108, 0.12);
+}
+
+.vp-doc .custom-block.danger .custom-block-title {
+  color: #f56c6c;
 }

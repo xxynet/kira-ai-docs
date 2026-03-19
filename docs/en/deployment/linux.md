@@ -1,14 +1,14 @@
-# Linux部署
+# Linux Deployment
 
-本指南将帮助您在Linux系统上部署KiraAI。
+This guide will help you deploy KiraAI on Linux systems.
 
-## 环境要求
-- Python 3.10+（推荐3.10-3.12）
-- 网络连接
+## Environment Requirements
+- Python 3.10+ (recommended 3.10-3.12)
+- Network connection
 
-## 安装步骤
+## Installation Steps
 
-### 1. 安装依赖项
+### 1. Install Dependencies
 
 ```bash
 # Ubuntu/Debian
@@ -20,52 +20,52 @@ sudo yum update -y
 sudo yum install python3 python3-pip python3-venv git -y
 ```
 
-### 2. 下载KiraAI
+### 2. Download KiraAI
 
 ```bash
 git clone https://github.com/xxynet/KiraAI.git
 cd KiraAI
 ```
 
-### 4. 启动服务
+### 3. Start the Service
 
-方式一：使用脚本启动（推荐）
+Method 1: Start with Script (Recommended)
 
 ```bash
 chmod +x scripts/run.sh
 ./scripts/run.sh
 ```
 
-方式二：直接启动
+Method 2: Start Directly
 
 ```bash
-# 创建虚拟环境
+# Create virtual environment
 python3 -m venv venv
 
-# 激活虚拟环境
+# Activate virtual environment
 source venv/bin/activate
 
-# 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 
 python main.py
 ```
 
-## 访问KiraAI
+## Access KiraAI
 
-部署完成后，您可以通过以下地址访问KiraAI的Web管理界面：
+After deployment is complete, you can access KiraAI's Web management interface through the following address:
 `http://localhost:5267`
-如果是远程访问，将localhost替换为服务器IP地址。
+If accessing remotely, replace localhost with the server IP address.
 
-## 注意事项
+## Notes
 
-- 确保防火墙允许5267端口（或您配置的其他端口）
-- 建议使用进程管理工具（如systemd）来管理服务
-- 定期更新项目代码以获取最新功能和安全修复
+- Ensure the firewall allows port 5267 (or other ports you configured)
+- It is recommended to use a process management tool (such as systemd) to manage the service
+- Regularly update the project code to get the latest features and security fixes
 
-## 故障排查
+## Troubleshooting
 
-- 检查Python版本是否符合要求：`python3 --version`
-- 确保虚拟环境已正确激活：`which python`
-- 查看项目日志以定位错误
-- 检查端口是否被占用：`sudo lsof -i :5267`
+- Check if Python version meets requirements: `python3 --version`
+- Ensure the virtual environment is properly activated: `which python`
+- View project logs to locate errors
+- Check if the port is occupied: `sudo lsof -i :5267`
