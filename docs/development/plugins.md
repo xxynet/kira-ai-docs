@@ -12,8 +12,6 @@ KiraAI's plugin system is based on an event-driven architecture, allowing plugin
 
 Plugins are placed in the `data/plugins/` directory and are automatically discovered and loaded at startup.
 
----
-
 ## Plugin Directory Structure
 
 ```
@@ -26,8 +24,6 @@ data/plugins/
 ```
 
 > Entry file lookup order: `main.py` → `plugin.py` → `__init__.py`
-
----
 
 ## manifest.json
 
@@ -53,8 +49,6 @@ Describes the plugin's basic information. **Must be present**; otherwise the fol
 | `description`  | Plugin description                                           | No          |
 | `repo`         | Repository URL                                               | No          |
 
----
-
 ## Plugin Main Class
 
 All plugins must extend `BasePlugin` and implement the `initialize()` and `terminate()` lifecycle methods.
@@ -78,8 +72,6 @@ class MyPlugin(BasePlugin):
 ```
 
 > The system will only register a plugin's Hooks, Tools, and Tags after `initialize()` completes successfully.
-
----
 
 ## Hook System
 
@@ -184,8 +176,6 @@ class MyPlugin(BasePlugin):
 
 > The two options can be combined. Option 1 is suited for appending to well-known sections (e.g. `"tools"`, `"memory"`); Option 2 is suited for inserting a fully independent context block.
 
----
-
 ## Tool Registration
 
 Tools expose callable functions to the LLM. There are two registration methods.
@@ -286,8 +276,6 @@ class MyPlugin(BasePlugin):
 | `text`        | `str`                             | Text description returned to the LLM           |
 | `attachments` | `list[Image \| Record \| File]`   | Attachments the LLM can send via `<file>` tag  |
 
----
-
 ## Tag Registration
 
 Tags register custom XML tag handlers that are triggered when the LLM output contains a matching tag. Two methods are available.
@@ -340,8 +328,6 @@ class MyPlugin(BasePlugin):
 ```
 
 > `tag_set` is the third positional parameter of the `@on.llm_request()` hook, of type `TagSet`. Unlike `@register.tag` (globally registered), this method applies only to the current request — useful for enabling tags conditionally per session or context.
-
----
 
 ## PluginContext API
 
@@ -397,8 +383,6 @@ other_plugin = self.ctx.get_plugin_inst("other_plugin_id")
 buffer = self.ctx.get_buffer(session_id)
 await self.ctx.flush_session_messages(session_id)
 ```
-
----
 
 ## Configuration System (schema.json)
 
@@ -483,8 +467,6 @@ class MyPlugin(BasePlugin):
 
 > Config is saved to `data/config/plugins/{plugin_id}.json` and default values are generated automatically on first initialization.
 
----
-
 ## Data Storage
 
 Store persistent data in the plugin's dedicated data directory to avoid conflicts with other plugins:
@@ -516,8 +498,6 @@ class MyPlugin(BasePlugin):
             encoding="utf-8"
         )
 ```
-
----
 
 ## Background Tasks
 
@@ -553,8 +533,6 @@ class MyPlugin(BasePlugin):
             await asyncio.sleep(60)  # Run every 60 seconds
 ```
 
----
-
 ## Proactive Message Push
 
 Plugins can proactively send messages to a session without waiting for a user trigger, via `ctx.publish_notice()`:
@@ -577,8 +555,6 @@ class MyPlugin(BasePlugin):
             is_mentioned=True
         )
 ```
-
----
 
 ## Development Notes
 
