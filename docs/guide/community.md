@@ -14,8 +14,8 @@ Since KiraAI is still in the early stage, we haven't implemented a plugin store 
 
 - [KiraOS_Plugin](https://github.com/LyaQanYi/KiraOS_Plugin) - KiraOS plugin, providing more powerful memory capabilities and Skills integration
 - [KiraAI_qzone_plugin](https://github.com/znq19/KiraAI_qzone_plugin) - QZone plugin, giving your AI robot complete QZone management capabilities
-[system_info_plugin](https://github.com/luochenYukitsune/kiraAI-system_info_plugin) - A plugin that queries sysinfo, config and manages plugins
-[Read Atmosphere Plugin](https://github.com/luochenYukitsune/kiraAI-read_atmosphere_plugin) - Smart judgment to determine whether to reply
+- [system_info_plugin](https://github.com/luochenYukitsune/kiraAI-system_info_plugin) - A plugin that queries sysinfo, config and manages plugins
+- [Read Atmosphere Plugin](https://github.com/luochenYukitsune/kiraAI-read_atmosphere_plugin) - Smart judgment to determine whether to reply
 - [kira-ai-plugin-bilibili](https://github.com/xxynet/kira-ai-plugin-bilibili) - B站工具 — A plugin to empower KiraAI the ability to use bilibili
 - [Ntfy](https://github.com/xxynet/kira-ai-plugin-ntfy) - A KiraAI plugin that sends push notifications via ntfy.
 - [Plugin Manager](https://github.com/Leveveve/plugin_manager) - A plugin to query & manage plugins
