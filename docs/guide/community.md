@@ -20,3 +20,4 @@ Since KiraAI is still in the early stage, we haven't implemented a plugin store 
 - [Ntfy](https://github.com/xxynet/kira-ai-plugin-ntfy) - A KiraAI plugin that sends push notifications via ntfy.
 - [Plugin Manager](https://github.com/Leveveve/plugin_manager) - A plugin to query & manage plugins
 - [Weather-Query](https://github.com/Leveveve/Weather-Query-) - Weather query plugin
+- [KiraAI Reminder Plugin](https://github.com/xgrbhc/KiraAI-Reminder-Plugin) - Highly available, full-featured, intelligent KiraAI scheduling plugin

@@ -21,3 +21,4 @@
 - [Ntfy](https://github.com/xxynet/kira-ai-plugin-ntfy) - A KiraAI plugin that sends push notifications via ntfy.
 - [Plugin Manager](https://github.com/Leveveve/plugin_manager) - 插件查询管理插件
 - [Weather-Query](https://github.com/Leveveve/Weather-Query-) - 天气查询插件
+- [KiraAI Reminder Plugin](https://github.com/xgrbhc/KiraAI-Reminder-Plugin) - 高可用、全功能、智能化的 KiraAI 定时提配生态插件
