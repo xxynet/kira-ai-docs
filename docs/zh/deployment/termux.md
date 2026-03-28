@@ -204,4 +204,25 @@ source ~/.bashrc
 ### 日常使用
 
 1. 启动 NapCat：在 Termux 中输入 NC 并按回车。
-2. 启动 KiraAI：新建一个 Termux 会话（侧滑新建），输入 Kiraai 并按回车。
+2. 启动 KiraAI：新建一个 Termux 会话，输入 Kiraai 并按回车。
+
+## 访问KiraAI
+
+部署完成后，您可以通过以下地址访问KiraAI的Web管理界面：
+http://localhost:5267
+如果是远程访问，将localhost替换为服务器IP地址。
+
+## 注意事项
+
+- 确保防火墙允许5267端口（或您配置的其他端口）
+- 过程中部分有手动选择步骤请仔细阅读注释
+
+## 故障排查
+
+- 检查Python版本是否符合要求：`python --version`
+- 确保虚拟环境已正确激活：`venv\Scripts\activate`
+- 查看项目日志以定位错误
+  
+## 常见问题
+- 如果显示报错信息fatal:unable to access... Recv_failure: Software caused connection abort
+就表示网络连接失败开梯子
