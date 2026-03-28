@@ -69,6 +69,7 @@ export default defineConfig({
               { text: 'Linux', link: '/deployment/linux' },
               { text: 'Docker', link: '/deployment/docker' },
               { text: 'Zeabur', link: '/deployment/zeabur' },
+              { text: 'Termux', link: '/deployment/termux' },
             ]
           },
           {
@@ -163,6 +164,7 @@ export default defineConfig({
               { text: 'Linux', link: '/zh/deployment/linux' },
               { text: 'Docker', link: '/zh/deployment/docker' },
               { text: 'Zeabur', link: '/zh/deployment/zeabur' },
+              { text: 'Termux', link: '/zh/deployment/termux' },
             ]
           },
           {

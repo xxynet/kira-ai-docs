@@ -1,5 +1,9 @@
 # Termux部署
 
+:::info
+**社区贡献** — 本部署方式由社区贡献
+:::
+
 本指南将帮助您在Termux上部署KiraAI。
 
 ## 一.前置准备
@@ -194,8 +198,8 @@ echo "alias NC='proot-distro login debian -- bash -c \"xvfb-run -a /root/Napcat/
 echo "echo '输入 NC 启动 NapCat (自动进入Debian并运行NapCat)'" >> ~/.bashrc
 
 # 2. 一键启动 KiraAI 的命令
-echo "alias Kiraai='proot-distro login debian -- bash -c \"cd /root/KiraAI && source .venv/bin/activate && cd scripts && ./run.sh\"'" >> ~/.bashrc
-echo "echo ' 输入 Kiraai 一键启动 KiraAI (自动进入 Debian 并激活 .venv 环境'" >> ~/.bashrc
+echo "alias kira-ai='proot-distro login debian -- bash -c \"cd /root/KiraAI && source .venv/bin/activate && cd scripts && ./run.sh\"'" >> ~/.bashrc
+echo "echo ' 输入 kira-ai 一键启动 KiraAI (自动进入 Debian 并激活 .venv 环境'" >> ~/.bashrc
 
 # 3. 重新加载配置
 source ~/.bashrc
@@ -204,7 +208,7 @@ source ~/.bashrc
 ### 日常使用
 
 1. 启动 NapCat：在 Termux 中输入 NC 并按回车。
-2. 启动 KiraAI：新建一个 Termux 会话，输入 Kiraai 并按回车。
+2. 启动 KiraAI：新建一个 Termux 会话，输入 kira-ai 并按回车。
 
 ## 访问KiraAI
 
