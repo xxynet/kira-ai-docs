@@ -12,4 +12,4 @@ KiraAI支持丰富的插件扩展，让您可以轻松定制和增强AI数字生
 
 ## 插件开发
 
-您可以根据[插件开发指南](/development/development)开发自己的插件。
+您可以根据[插件开发指南](/zh/development/plugins)开发自己的插件。

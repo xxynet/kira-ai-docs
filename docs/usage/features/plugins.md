@@ -12,4 +12,4 @@ A plugin is a modular extension that allows you to add new features to KiraAI wi
 
 ## Plugin Development
 
-You can develop your own plugins according to the [Plugin Development Guide](/development/development).
+You can develop your own plugins according to the [Plugin Development Guide](/development/plugins).
