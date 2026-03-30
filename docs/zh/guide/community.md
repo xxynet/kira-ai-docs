@@ -19,6 +19,9 @@
 - [Read Atmosphere Plugin](https://github.com/luochenYukitsune/kiraAI-read_atmosphere_plugin) - 智能判断是否需要回复的 KiraAI 插件
 - [kira-ai-plugin-bilibili](https://github.com/xxynet/kira-ai-plugin-bilibili) - B站工具 — 赋予 KiraAI 使用哔哩哔哩的能力
 - [Ntfy](https://github.com/xxynet/kira-ai-plugin-ntfy) - A KiraAI plugin that sends push notifications via ntfy.
+- [AstrBook](https://github.com/xxynet/kira-ai-plugin-astrbook) - Astrbook 论坛工具插件，让 KiraAI 能够浏览帖子、发帖、回复、管理通知。
+- [memos](https://github.com/xxynet/kira-ai-plugin-memos) - A KiraAI plugin that posts memos to a self-hosted Memos server.
 - [Plugin Manager](https://github.com/Leveveve/plugin_manager) - 插件查询管理插件
 - [Weather-Query](https://github.com/Leveveve/Weather-Query-) - 天气查询插件
 - [KiraAI Reminder Plugin](https://github.com/xgrbhc/KiraAI-Reminder-Plugin) - 高可用、全功能、智能化的 KiraAI 定时提配生态插件
+- [QQ群文件管理插件](https://github.com/nointer/KiraAI-plugins-qq_file_manager/) - 为KiraAI提供一个功能完整的 QQ 群文件管理插件，支持KiraAI文件列表查看、文件夹管理、文件移动、文件下载、批量删除等功能，并提供灵活的权限控制和调试模式。
