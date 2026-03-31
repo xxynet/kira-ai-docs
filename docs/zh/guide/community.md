@@ -25,3 +25,8 @@
 - [Weather-Query](https://github.com/Leveveve/Weather-Query-) - 天气查询插件
 - [KiraAI Reminder Plugin](https://github.com/xgrbhc/KiraAI-Reminder-Plugin) - 高可用、全功能、智能化的 KiraAI 定时提配生态插件
 - [QQ群文件管理插件](https://github.com/nointer/KiraAI-plugins-qq_file_manager/) - 为KiraAI提供一个功能完整的 QQ 群文件管理插件，支持KiraAI文件列表查看、文件夹管理、文件移动、文件下载、批量删除等功能，并提供灵活的权限控制和调试模式。
+- [World Book](https://github.com/canyingshc/Kira-world-book) - 世界书知识管理插件 — 根据对话关键词自动注入背景设定与知识到 LLM 上下文中。
+
+### 提供商
+
+- [Dashscope Qwen TTS](https://github.com/canyingshc/KiraAI-Qwen3-TTS-VC) - 一个为 KiraAI 编写的 Dashscope Qwen TTS 声音复刻语音合成 Provider。
