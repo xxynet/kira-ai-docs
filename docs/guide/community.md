@@ -24,6 +24,7 @@ Since KiraAI is still in the early stage, we haven't implemented a plugin store 
 - [Weather-Query](https://github.com/Leveveve/Weather-Query-) - Weather query plugin
 - [KiraAI Reminder Plugin](https://github.com/xgrbhc/KiraAI-Reminder-Plugin) - Highly available, full-featured, intelligent KiraAI scheduling plugin
 - [World Book](https://github.com/canyingshc/Kira-world-book) - World book knowledge management plugin — automatically inject background settings and knowledge to LLM context
+- [SyncLink](https://github.com/OldTangyuan/KiraAI_SyncLink_plugin) - Enables encrypted communication between your AI and other AIs with the same plugin installed.
 
 ### Providers
 
