@@ -65,18 +65,28 @@ export default defineConfig({
             text: 'Deployment',
             collapsed: false,
             items: [
-              { text: 'Windows', link: '/deployment/windows' },
-              { text: 'Linux', link: '/deployment/linux' },
-              { text: 'Docker', link: '/deployment/docker' },
-              { text: 'Zeabur', link: '/deployment/zeabur' },
-              { text: 'Termux', link: '/deployment/termux' },
+              { text: 'Deploy on Windows', link: '/deployment/windows' },
+              { text: 'Deploy on Linux', link: '/deployment/linux' },
+              { text: 'Deploy with Docker', link: '/deployment/docker' },
+              { text: 'Deploy on Zeabur', link: '/deployment/zeabur' },
+              { text: 'Deploy on Termux', link: '/deployment/termux' },
             ]
           },
           {
             text: 'Configuration',
             collapsed: false,
             items: [
-              { text: 'Adapter', link: '/configuration/adapter' },
+              { 
+                text: 'Adapter', 
+                collapsed: false,
+                link: '/configuration/adapter/adapter',
+                items: [
+                  { text: 'QQ', link: '/configuration/adapter/qq' },
+                  { text: 'Telegram', link: '/configuration/adapter/telegram' },
+                  { text: 'BiliBili', link: '/configuration/adapter/bilibili' },
+                  { text: 'WeChat', link: '/configuration/adapter/wechat' },
+                ]
+               },
               { text: 'Provider', link: '/configuration/provider' },
             ]
           },
@@ -160,18 +170,28 @@ export default defineConfig({
             text: '部署',
             collapsed: false,
             items: [
-              { text: 'Windows', link: '/zh/deployment/windows' },
-              { text: 'Linux', link: '/zh/deployment/linux' },
-              { text: 'Docker', link: '/zh/deployment/docker' },
-              { text: 'Zeabur', link: '/zh/deployment/zeabur' },
-              { text: 'Termux', link: '/zh/deployment/termux' },
+              { text: 'Windows 部署', link: '/zh/deployment/windows' },
+              { text: 'Linux 部署', link: '/zh/deployment/linux' },
+              { text: 'Docker 部署', link: '/zh/deployment/docker' },
+              { text: 'Zeabur 部署', link: '/zh/deployment/zeabur' },
+              { text: 'Termux 部署', link: '/zh/deployment/termux' },
             ]
           },
           {
             text: '配置',
             collapsed: false,
             items: [
-              { text: '适配器', link: '/zh/configuration/adapter' },
+              { 
+                text: '适配器', 
+                collapsed: false,
+                link: '/zh/configuration/adapter/adapter',
+                items: [
+                  { text: 'QQ', link: '/zh/configuration/adapter/qq' },
+                  { text: 'Telegram', link: '/zh/configuration/adapter/telegram' },
+                  { text: 'BiliBili', link: '/zh/configuration/adapter/bilibili' },
+                  { text: '微信', link: '/zh/configuration/adapter/wechat' },
+                ]
+              },
               { text: '提供商', link: '/zh/configuration/provider' },
             ]
           },
