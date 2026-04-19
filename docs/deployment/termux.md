@@ -1,7 +1,7 @@
 # Termux Deployment
 
-:::info
-**Community Contribution** — This deployment guide was contributed by the community
+:::tip Community Contribution
+This deployment guide was contributed by the community
 :::
 
 This guide will help you deploy KiraAI on Termux.

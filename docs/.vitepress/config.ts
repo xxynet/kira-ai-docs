@@ -70,6 +70,7 @@ export default defineConfig({
               { text: 'Deploy with Docker', link: '/deployment/docker' },
               { text: 'Deploy on Zeabur', link: '/deployment/zeabur' },
               { text: 'Deploy on Termux', link: '/deployment/termux' },
+              { text: 'Deploy on Desktop', link: '/deployment/desktop' },
             ]
           },
           {
@@ -175,6 +176,7 @@ export default defineConfig({
               { text: 'Docker 部署', link: '/zh/deployment/docker' },
               { text: 'Zeabur 部署', link: '/zh/deployment/zeabur' },
               { text: 'Termux 部署', link: '/zh/deployment/termux' },
+              { text: '桌面端部署', link: '/zh/deployment/desktop' },
             ]
           },
           {
