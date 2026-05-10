@@ -111,7 +111,19 @@ export default defineConfig({
             text: 'Development',
             collapsed: false,
             items: [
-              { text: 'Plugin Development', link: '/development/plugins' },
+              { 
+                text: 'Plugin Development', 
+                collapsed: true,
+                items: [
+                  { text: 'Development Guide', link: '/development/plugins/dev-guide' },
+                  { text: 'Manifest', link: '/development/plugins/manifest' },
+                  { text: 'Config System', link: '/development/plugins/config-system' },
+                  { text: 'Main Class', link: '/development/plugins/main-class' },
+                  { text: 'Hook System', link: '/development/plugins/hooks' },
+                  { text: 'API Registration', link: '/development/plugins/fast-api' },
+                  { text: 'Plugin Context', link: '/development/plugins/context' },
+                ]
+              },
               { text: 'Provider Development', link: '/development/providers' },
               { text: 'Adapter Development', link: '/development/adapters' },
               { text: 'API Reference', link: '/development/api' },
@@ -217,7 +229,19 @@ export default defineConfig({
             text: '开发',
             collapsed: false,
             items: [
-              { text: '插件开发', link: '/zh/development/plugins' },
+              { 
+                text: '插件开发', 
+                collapsed: true,
+                items: [
+                  { text: '开发指南', link: '/zh/development/plugins/dev-guide' },
+                  { text: '清单文件', link: '/zh/development/plugins/manifest' },
+                  { text: '配置系统', link: '/zh/development/plugins/config-system' },
+                  { text: '主类', link: '/zh/development/plugins/main-class' },
+                  { text: '钩子系统', link: '/zh/development/plugins/hooks' },
+                  { text: 'API注册', link: '/zh/development/plugins/fast-api' },
+                  { text: '插件上下文', link: '/zh/development/plugins/context' },
+                ]
+              },
               { text: '提供商开发', link: '/zh/development/providers' },
               { text: '适配器开发', link: '/zh/development/adapters' },
               { text: 'API参考', link: '/zh/development/api' },

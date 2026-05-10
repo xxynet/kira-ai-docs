@@ -1,0 +1,35 @@
+# Plugin Development Guide
+
+KiraAI has powerful plugin extension capabilities, allowing developers to extend KiraAI's functionality and expand the capabilities of digital life by developing plugins.
+
+## Overview
+
+KiraAI's plugin system is based on an event-driven architecture, allowing plugins to extend the system through three mechanisms:
+
+- **Hook**: Listen to system events such as message arrival and LLM request/response to insert custom logic
+- **Tool**: Register callable functions for the LLM
+- **Tag**: Register custom XML tag handlers to control message output format
+
+Plugins are placed in the `data/plugins/` directory and are automatically discovered and loaded at startup.
+
+## Plugin Directory Structure
+
+```
+data/plugins/
+└── my_plugin/              # Plugin folder (used as plugin_id unless overridden in manifest.json)
+    ├── manifest.json       # Plugin metadata (required)
+    ├── main.py             # Plugin entry point (required; plugin.py or __init__.py also accepted)
+    ├── schema.json         # Configuration field definitions (optional)
+    └── ...                 # Other auxiliary modules
+```
+
+> Entry file lookup order: `main.py` → `plugin.py` → `__init__.py`
+
+## Development Notes
+
+1. **Hook function signature**: Must accept `(self, event, *args, **kwargs)`. Extra parameters (e.g. `req`, `resp`) are passed as positional arguments — use named parameters to receive them.
+2. **Tool function signature**: `(self, event: KiraMessageBatchEvent, param1: type, param2: type)` — the first parameter is always the event object that triggered the tool call.
+3. **Priority**: `SYS_HIGH` and `SYS_LOW` are reserved for the system. Plugin developers should use `HIGH / MEDIUM / LOW` or custom integers.
+4. **Do not block the event loop**: Use `await` for all I/O operations; use `asyncio.to_thread()` for CPU-intensive work.
+5. **Clean up in terminate**: Cancel background tasks, close connections — avoid resource leaks.
+6. **Config hot-reload**: The system calls `initialize()` again after a config change. Plugins must support re-entrant initialization.
