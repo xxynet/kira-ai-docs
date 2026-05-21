@@ -27,12 +27,14 @@ class MyPlugin(BasePlugin):
 | `switch`       | Boolean toggle                       | —                         |
 | `list`         | Multi-line list (one item per line)  | —                         |
 | `enum`         | Dropdown selector                    | `options: [...]`          |
+| `multi_select` | Multi-selection dropdown             | `options: [...]`          |
 | `json`         | JSON editor                          | —                         |
 | `yaml`         | YAML editor                          | —                         |
 | `editor`       | Code/text editor                     | `language: "python"`      |
 | `textarea`     | Multi-line plain text input          | —                         |
 | `markdown`     | Markdown editor                      | —                         |
-| `model_select` | Model selector                       | `model_type: "llm"/"tts"` |
+| `model_select` | Model selector                       | `model_type: "llm"/"tts"/"stt"/"image"/"embedding"/"rerank"/"video"` |
+| `section`      | Collapsible section for grouping fields | `collapsed`, `fields`  |
 
 ## Example schema.json
 
@@ -81,9 +83,76 @@ class MyPlugin(BasePlugin):
     "model_type": "llm",
     "default": "",
     "hint": "Leave empty to use the system default model"
+  },
+  "features": {
+    "type": "multi_select",
+    "name": "Features",
+    "default": ["chat"],
+    "options": ["chat", "search", "tools", "vision"],
+    "hint": "Select enabled features"
+  },
+  "section_advanced": {
+    "type": "section",
+    "name": "Advanced Settings",
+    "hint": "Advanced options, change with caution",
+    "collapsed": true,
+    "fields": {
+      "retries": {
+        "type": "integer",
+        "name": "Retries",
+        "hint": "Max retry attempts",
+        "default": 3
+      },
+      "extra_headers": {
+        "type": "json",
+        "name": "Extra Headers",
+        "hint": "Additional HTTP headers",
+        "default": {}
+      }
+    }
   }
 }
 ```
+
+## Section Type
+
+`section` is a special type that groups nested fields into a collapsible section. Fields inside are saved as a nested object under the section key.
+
+**Parameters:**
+
+| Parameter  | Type    | Description                         |
+| ---------- | ------- | ----------------------------------- |
+| `collapsed`| boolean | Whether the section is collapsed by default |
+| `fields`   | object  | Nested field definitions (same format as top-level fields) |
+
+**Saved config format:**
+
+```json
+{
+  "section_basic": {
+    "api_key": "sk-xxx",
+    "timeout": 30
+  },
+  "section_advanced": {
+    "retries": 3
+  }
+}
+```
+
+**Reading nested config in plugin code:**
+
+```python
+class MyPlugin(BasePlugin):
+    async def initialize(self):
+        basic = self.plugin_cfg.get("section_basic", {})
+        api_key = basic.get("api_key", "")
+        timeout = basic.get("timeout", 30)
+
+        advanced = self.plugin_cfg.get("section_advanced", {})
+        retries = advanced.get("retries", 3)
+```
+
+Section child fields also support `locales` for i18n.
 
 ## Locales
 

@@ -27,12 +27,14 @@ class MyPlugin(BasePlugin):
 | `switch`       | 布尔开关                       | —                         |
 | `list`         | 多行列表（每行一条）           | —                         |
 | `enum`         | 下拉选项                       | `options: [...]`          |
+| `multi_select` | 多选下拉框                     | `options: [...]`          |
 | `json`         | JSON 编辑器                    | —                         |
 | `yaml`         | YAML 编辑器                    | —                         |
 | `editor`       | 代码/文本编辑器                | `language: "python"`      |
 | `textarea`     | 多行纯文本输入                 | —                         |
 | `markdown`     | Markdown 编辑器                | —                         |
-| `model_select` | 模型选择器                     | `model_type: "llm"/"tts"` |
+| `model_select` | 模型选择器                     | `model_type: "llm"/"tts"/"stt"/"image"/"embedding"/"rerank"/"video"` |
+| `section`      | 可折叠分组区域                 | `collapsed`, `fields`     |
 
 ## 示例 schema.json
 
@@ -81,9 +83,76 @@ class MyPlugin(BasePlugin):
     "model_type": "llm",
     "default": "",
     "hint": "留空则使用系统默认模型"
+  },
+  "features": {
+    "type": "multi_select",
+    "name": "功能",
+    "default": ["chat"],
+    "options": ["chat", "search", "tools", "vision"],
+    "hint": "选择启用的功能"
+  },
+  "section_advanced": {
+    "type": "section",
+    "name": "高级设置",
+    "hint": "高级选项，修改需谨慎",
+    "collapsed": true,
+    "fields": {
+      "retries": {
+        "type": "integer",
+        "name": "重试次数",
+        "hint": "最大重试次数",
+        "default": 3
+      },
+      "extra_headers": {
+        "type": "json",
+        "name": "额外请求头",
+        "hint": "额外的 HTTP 请求头",
+        "default": {}
+      }
+    }
   }
 }
 ```
+
+## Section 类型
+
+`section` 是一种特殊类型，用于将嵌套字段分组到可折叠区域中。内部字段以嵌套对象的形式保存在 section 键下。
+
+**参数：**
+
+| 参数       | 类型    | 说明                       |
+| ---------- | ------- | -------------------------- |
+| `collapsed`| boolean | 是否默认折叠               |
+| `fields`   | object  | 嵌套字段定义（格式与顶层字段相同） |
+
+**保存后的配置格式：**
+
+```json
+{
+  "section_basic": {
+    "api_key": "sk-xxx",
+    "timeout": 30
+  },
+  "section_advanced": {
+    "retries": 3
+  }
+}
+```
+
+**在插件代码中读取嵌套配置：**
+
+```python
+class MyPlugin(BasePlugin):
+    async def initialize(self):
+        basic = self.plugin_cfg.get("section_basic", {})
+        api_key = basic.get("api_key", "")
+        timeout = basic.get("timeout", 30)
+
+        advanced = self.plugin_cfg.get("section_advanced", {})
+        retries = advanced.get("retries", 3)
+```
+
+Section 的子字段同样支持 `locales` 国际化。
 
 ## Locales
 
