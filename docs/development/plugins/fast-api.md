@@ -118,78 +118,238 @@ async def public_info(self):
 
 # Page and Static Registration
 
-Plugins can register custom WebUI pages and serve static resources using `@register.page` and `@register.static` decorators. This allows plugins to provide rich, interactive user interfaces.
+Plugins can register custom WebUI pages and serve static resources using `@register.page` and `@register.static` decorators.
 
 ## Page Registration
 
-The `@register.page` decorator registers dynamic page endpoints that serve HTML content. All plugin pages are prefixed with `/page/plugin/{plugin_id}/`.
+The `@register.page` decorator registers plugin pages. The handler returns a `PluginPage` object that describes the page source. All plugin pages are prefixed with `/page/plugin/{plugin_id}/`.
 
-### Parameters
-
-| Parameter | Type         | Required | Default | Description                                                |
-| --------- | ------------ | -------- | ------- | ---------------------------------------------------------- |
-| `route`   | `str`        | Yes      | —       | URL path (e.g., `"/dashboard"`, `"/{path:path}"`)          |
-| `auth`    | `bool`       | No       | `True`  | Require user authentication                                |
-| `menu`    | `dict`       | No       | `None`  | Add to sidebar navigation. Keys: `title`, `icon`, `category`, `priority` |
-
-### Handler Requirements
-
-The handler function must return an `HTMLResponse` (or other FastAPI Response types):
+### Import
 
 ```python
-from fastapi.responses import HTMLResponse
+from core.plugin import register, PluginPage, PageMenu
+```
 
-@register.page(route="/dashboard", auth=True)
-async def dashboard(self):
-    return HTMLResponse("""
+### Decorator Parameters
+
+| Parameter | Type                 | Required | Default | Description              |
+| --------- | -------------------- | -------- | ------- | ------------------------ |
+| `route`   | `str`                | Yes      | —       | URL path (e.g., `"/dashboard"`) |
+| `auth`    | `bool`               | No       | `True`  | Require user authentication |
+| `menu`    | `PageMenu` or `dict` | No       | `None`  | Sidebar menu config      |
+
+### PluginPage Factory Methods
+
+`PluginPage` provides three ways to create a page:
+
+#### `from_folder` — Recommended
+
+Serves static files from a directory. Ideal for pre-built SPAs or plain HTML. **Path traversal protection**: only directories inside the plugin root are accessible.
+
+```python
+@register.page("/dashboard", menu=PageMenu(label="Dashboard", icon="DataAnalysis"))
+def dashboard(self):
+    return PluginPage.from_folder("./web")
+```
+
+#### `from_url` — Redirect
+
+Redirects the iframe to an external URL.
+
+```python
+@register.page("/external", menu=PageMenu(label="External", icon="Link"))
+def external(self):
+    return PluginPage.from_url("https://example.com")
+```
+
+#### `from_html` — Inline HTML
+
+Serves an HTML string. Suitable for simple pages.
+
+```python
+@register.page("/info", menu=PageMenu(label="Info", icon="Document"))
+def info_page(self):
+    return PluginPage.from_html("""
     <!DOCTYPE html>
     <html>
-    <head><title>Dashboard</title></head>
-    <body><h1>Dashboard</h1></body>
+    <head><meta charset="utf-8"><title>Info</title></head>
+    <body><h1>Plugin Info</h1></body>
     </html>
     """)
 ```
 
-**Final Route:** `/page/plugin/my_plugin/dashboard`
+### PageMenu
 
-### Menu Integration
+`PageMenu` controls how a page appears in the WebUI sidebar. If `menu` is omitted, the page won't appear in the sidebar but remains accessible via direct URL.
 
-The `menu` parameter adds a navigation entry to the WebUI sidebar:
+| Parameter | Type                       | Default | Description                                  |
+| --------- | -------------------------- | ------- | -------------------------------------------- |
+| `label`   | `str` or `dict[str, str]` | Required | Display text, supports i18n dict            |
+| `icon`    | `str`                      | `None`  | Element Plus icon component name             |
+| `order`   | `int`                      | `100`   | Sort order (lower = higher)                  |
+
+#### Multi-language label
+
+`label` accepts a locale dict. The WebUI automatically selects the matching translation with fallback chain: current locale → `en` → first available value.
 
 ```python
-@register.page(
-    route="/settings",
-    menu={
-        "title": "Plugin Settings",
-        "icon": "settings",
-        "category": "plugin-pages",
-        "priority": 0
-    }
-)
-async def settings_page(self):
-    return HTMLResponse("<h1>Settings</h1>")
+@register.page("/dashboard", menu=PageMenu(
+    label={"zh": "仪表盘", "en": "Dashboard"},
+    icon="DataAnalysis",
+    order=10
+))
+def dashboard(self):
+    return PluginPage.from_folder("./web")
 ```
 
-If `menu` is omitted, the page will not appear in the sidebar but remains accessible via direct URL.
+#### Dict compatibility
 
-### Single Page App (SPA) with Catch-All Route
-
-For Single Page Applications, use FastAPI's path parameter to catch all sub-routes:
+`menu` also accepts a plain dict (auto-converted to `PageMenu`):
 
 ```python
-@register.page(route="/{plugin_route:path}")
-async def spa_entry(self, plugin_route: str = ""):
-    # plugin_route contains the sub-path (e.g., "users/profile")
-    # All routes return the same HTML with client-side routing
-    return HTMLResponse("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <script src="/page/plugin/my_plugin/static/app.js"></script>
-    </head>
-    <body><div id="app"></div></body>
-    </html>
-    """)
+@register.page("/info", menu={"label": "Info", "icon": "Document"})
+def info_page(self):
+    return PluginPage.from_html("<h1>Hello</h1>")
+```
+
+### PluginPage Object Registration
+
+`PluginPage` objects do not carry `auth` or `menu` — these are controlled exclusively by the decorator:
+
+```python
+@register.page("/dashboard", auth=False, menu=PageMenu(
+    label={"zh": "仪表盘", "en": "Dashboard"},
+    icon="DataAnalysis"
+))
+def dashboard(self):
+    return PluginPage.from_folder("./web")
+```
+
+### Recommended Directory Structure
+
+When using `from_folder`, the recommended plugin structure is:
+
+```
+my_plugin/
+├── manifest.json
+├── main.py
+└── web/
+    ├── index.html
+    ├── style.css
+    └── app.js
+```
+
+```python
+@register.page("/", menu=PageMenu(label="My Page", icon="Box"))
+def main_page(self):
+    return PluginPage.from_folder("./web")
+```
+
+`web/index.html` is automatically served as the page entry point. The WebUI automatically injects the `PluginPageContext` bridge SDK (see below).
+
+## PluginPageContext Bridge SDK
+
+Pages provided via `from_folder` or `from_html` run inside a WebUI iframe. The WebUI automatically injects the `PluginPageContext` bridge SDK, allowing pages to access context information and call plugin APIs.
+
+### Usage
+
+The bridge SDK is auto-injected — no manual `<script>` tag needed. Use it directly in your page JS:
+
+```html
+<script>
+// Wait for bridge to be ready, then get context
+window.PluginPageContext.ready().then(function (ctx) {
+    console.log(ctx.pluginId)   // Plugin ID
+    console.log(ctx.isDark)     // Dark mode flag
+    console.log(ctx.locale)     // Current locale (e.g., "zh")
+    console.log(ctx.pageRoute)  // Page route
+})
+</script>
+```
+
+### API
+
+| Method                                    | Return Value      | Description                                        |
+| ----------------------------------------- | ----------------- | -------------------------------------------------- |
+| `ready()`                                 | `Promise<ctx>`    | Returns a Promise that resolves when bridge is ready |
+| `getContext()`                            | `object \| null`  | Synchronous context access (null before ready)     |
+| `onContext(fn)`                           | `() => void`      | Subscribe to context changes; returns unsubscribe  |
+| `onThemeChange(fn)`                       | `() => void`      | Subscribe to theme changes; callback `(isDark: bool)` |
+| `api.get(endpoint, params?)`              | `Promise<any>`    | GET to `/api/plugin/{id}/{endpoint}`               |
+| `api.post(endpoint, body?)`               | `Promise<any>`    | POST request                                       |
+| `api.upload(endpoint, file, fieldName?)`  | `Promise<any>`    | Upload file via FormData                           |
+| `api.delete(endpoint)`                    | `Promise<any>`    | DELETE request                                     |
+
+### Theme Adaptation
+
+The bridge automatically sets `data-theme="dark"` or `data-theme="light"` on `<html>`. Plugin pages adapt to dark mode via CSS:
+
+```css
+body { background: #fff; color: #333; }
+
+[data-theme="dark"] body {
+    background: #1a1a2e;
+    color: #eee;
+}
+```
+
+Or listen for theme changes in JS:
+
+```javascript
+window.PluginPageContext.onThemeChange(function (isDark) {
+    document.body.classList.toggle('dark', isDark)
+})
+```
+
+### Calling Plugin APIs
+
+The bridge's `api` methods directly call plugin-registered REST API endpoints (same-origin cookie auth, no extra handling needed):
+
+```javascript
+// Calls an endpoint registered with @register.api(method="GET", path="/hello")
+window.PluginPageContext.api.get('/hello').then(function (data) {
+    console.log(data)
+})
+```
+
+### Complete Example
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>My Plugin Page</title>
+    <style>
+        body { font-family: system-ui; padding: 2rem; background: #f5f5f5; }
+        [data-theme="dark"] body { background: #1a1a2e; color: #eee; }
+    </style>
+</head>
+<body>
+    <h1 id="title">Loading...</h1>
+    <button id="btn">Call API</button>
+    <pre id="result"></pre>
+
+    <script>
+        var PPC = window.PluginPageContext
+
+        PPC.ready().then(function (ctx) {
+            document.getElementById('title').textContent =
+                'Plugin: ' + ctx.pluginId + ' | Locale: ' + ctx.locale
+        })
+
+        PPC.onThemeChange(function (isDark) {
+            console.log('Theme changed:', isDark ? 'dark' : 'light')
+        })
+
+        document.getElementById('btn').addEventListener('click', function () {
+            PPC.api.get('/hello').then(function (data) {
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2)
+            })
+        })
+    </script>
+</body>
+</html>
 ```
 
 ## Static Resource Registration
@@ -257,23 +417,4 @@ With `html=True`, accessing `/page/plugin/my_plugin/` will serve `dist/index.htm
 @register.static(path="/", directory="dist", html=True)
 async def _init_static(self):
     pass
-```
-
-## Plugin Page Directory Structure
-
-A typical plugin with pages and static resources:
-
-```
-my_plugin/
-├── manifest.json
-├── main.py
-├── static/
-│   ├── css/
-│   │   └── style.css
-│   ├── js/
-│   │   └── app.js
-│   └── images/
-│       └── logo.png
-└── templates/      (optional, if using Jinja2)
-    └── index.html
 ```
