@@ -14,17 +14,90 @@ from core.plugin import on, Priority
 This project is in active development; the decorator system may change.
 :::
 
-| Decorator                | Triggered When                                       | Key Parameters                     |
-| ------------------------ | ---------------------------------------------------- | ---------------------------------- |
-| `@on.im_message()`       | IM message arrives (earliest)                        | `event: KiraMessageEvent`          |
-| `@on.message_buffered()` | Message enters the buffer                            | `event: KiraMessageEvent`          |
-| `@on.im_batch_message()` | Messages merged after debounce                       | `event: KiraMessageEvent`          |
-| `@on.llm_request()`      | Before sending a request to the LLM (inject prompt) | `event`, `req: LLMRequest`         |
-| `@on.llm_response()`     | After raw LLM response is received                   | `event`, `resp: LLMResponse`       |
-| `@on.after_xml_parse()`  | After XML parsing (MessageChain available)           | `event`, `chain: MessageChain`     |
-| `@on.tool_result()`      | After a tool call returns its result                 | `event`, `result: ToolResult`      |
-| `@on.step_result()`      | After each agent step completes                      | `event`, `resp: LLMResponse`       |
-| `@on.final_result()`     | After the final message result is generated          | `event`, `chain: MessageChain`     |
+### Message Pipeline Events
+
+| Decorator                | Triggered When                                       | Handler Signature                                             |
+| ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------- |
+| `@on.im_message()`       | IM message arrives (earliest)                        | `(self, event: KiraMessageEvent, *args, **kwargs)`            |
+| `@on.message_buffered()` | Message enters the buffer                            | `(self, sid: str, *args, **kwargs)`                           |
+| `@on.im_batch_message()` | Messages merged after debounce                       | `(self, event: KiraMessageBatchEvent, *args, **kwargs)`       |
+| `@on.llm_request()`      | Before sending a request to the LLM (inject prompt) | `(self, event: KiraMessageBatchEvent, req: LLMRequest, tag_set: TagSet, *args, **kwargs)` |
+| `@on.llm_response()`     | After raw LLM response is received                   | `(self, event: KiraMessageBatchEvent, resp: LLMResponse, *args, **kwargs)` |
+| `@on.after_xml_parse()`  | After XML parsing (actions list available)           | `(self, event: KiraMessageBatchEvent, actions: list, *args, **kwargs)` |
+| `@on.tool_result()`      | After a tool call returns its result                 | `(self, event: KiraMessageBatchEvent, result: ToolResult, *args, **kwargs)` |
+| `@on.message_sent()`     | After a single message is sent to the IM platform    | `(self, event: KiraMessageBatchEvent, action: MessageChain, result: KiraIMSentResult, *args, **kwargs)` |
+| `@on.step_result()`      | After each agent step completes                      | `(self, event: KiraMessageBatchEvent, step_result: KiraStepResult, *args, **kwargs)` |
+| `@on.final_result()`     | After the final message result is generated          | *(Not dispatched in current version — reserved for future use)* |
+
+### Lifecycle Events
+
+| Decorator            | Triggered When                                   | Handler Signature              |
+| -------------------- | ------------------------------------------------ | ------------------------------ |
+| `@on.loaded()`       | All plugins finished loading (no arguments)      | `(self, *args, **kwargs)`      |
+| `@on.shutdown()`     | System is about to shut down (no arguments)      | `(self, *args, **kwargs)`      |
+
+### Error Events
+
+| Decorator             | Triggered When                                    | Handler Signature                                       |
+| --------------------- | ------------------------------------------------- | ------------------------------------------------------- |
+| `@on.exception()`     | Any hook handler raises an exception              | `(self, event, exc_event: KiraExceptionEvent, *args, **kwargs)` |
+
+:::tip
+All handler functions must be `async` methods of a `BasePlugin` subclass. Always accept `*args, **kwargs` for forward compatibility.
+:::
+
+## Message Processing Pipeline
+
+The following diagram shows how events are dispatched during message processing:
+
+```
+IM Message Arrives
+        │
+        ▼
+  @on.im_message()        ← set strategy: trigger / buffer / flush / discard
+        │
+        ▼
+  [Message Buffering]
+        │
+        ▼
+  @on.message_buffered()  ← sid only (lightweight notification)
+        │
+        ▼
+  [Debounce / Batch]
+        │
+        ▼
+  @on.im_batch_message()  ← access to all batched messages
+        │
+        ▼
+  @on.llm_request()       ← inject prompts, tags, tools
+        │
+        ▼
+  [LLM Call]
+        │
+        ▼
+  @on.llm_response()      ← read raw LLM output, auto-fix XML
+        │
+        ▼
+  [Tool Execution] ◄──────────► @on.tool_result()  ← per tool call
+        │
+        ▼
+  [XML Parsing]
+        │
+        ▼
+  @on.after_xml_parse()   ← inspect/modify parsed actions
+        │
+        ▼
+  [Send Messages]
+        │
+        ▼
+  @on.message_sent()      ← per message, with send result
+        │
+        ▼
+  @on.step_result()       ← after each agent step
+        │
+        ▼
+  [Loop or Complete]
+```
 
 ## Priority
 
@@ -38,6 +111,12 @@ class Priority(IntEnum):
 ```
 
 **Higher number = executed first.** Defaults to `MEDIUM` when not specified.
+
+:::warning
+`SYS_HIGH` and `SYS_LOW` are reserved for builtin plugins. User plugins should only use `HIGH`, `MEDIUM`, `LOW`, or any custom integer value.
+:::
+
+The `priority` parameter accepts any integer, not just the predefined `Priority` enum values. For example, `priority=30` is valid and will place your handler between `MEDIUM(0)` and `HIGH(50)`.
 
 ## Example: Listening to Messages
 
@@ -100,6 +179,72 @@ class MyPlugin(BasePlugin):
 ```
 
 > The two options can be combined. Option 1 is suited for appending to well-known sections (e.g. `"tools"`, `"memory"`); Option 2 is suited for inserting a fully independent context block.
+
+## Example: Lifecycle Events
+
+Use `@on.loaded()` and `@on.shutdown()` for one-time initialization or cleanup that should happen at system level (outside of a single plugin's `initialize()`/`terminate()` lifecycle):
+
+```python
+from core.plugin import on
+
+class MyPlugin(BasePlugin):
+    @on.loaded()
+    async def on_system_ready(self, *args, **kwargs):
+        # All plugins have finished loading — safe to interact with other plugins
+        other = self.ctx.get_plugin_inst("other_plugin")
+        if other:
+            # Cross-plugin initialization...
+            pass
+
+    @on.shutdown()
+    async def on_system_shutdown(self, *args, **kwargs):
+        # System is shutting down — release external resources
+        await self._close_connections()
+```
+
+## Example: Exception Handling
+
+Use `@on.exception()` to catch and handle errors from other hook handlers. This is useful for logging, alerting, or fallback behavior:
+
+```python
+from core.plugin import on
+from core.chat import KiraExceptionEvent
+
+class MyPlugin(BasePlugin):
+    @on.exception()
+    async def on_error(self, event, exc_event: KiraExceptionEvent, *args, **kwargs):
+        # exc_event contains structured error info
+        print(f"Exception in {exc_event.stage}: {exc_event.name}: {exc_event.message}")
+        # Available fields:
+        #   exc_event.name      — exception class name (e.g. "ValueError")
+        #   exc_event.message   — str(e)
+        #   exc_event.traceback — full traceback string
+        #   exc_event.stage     — which EventType caused the error (e.g. "on_llm_request")
+        #   exc_event.source    — "plugin" or "core"
+        #   exc_event.comp_id   — plugin ID of the failing handler
+        #   exc_event.e         — the original exception object
+```
+
+:::tip
+The exception handler itself is protected: if an `@on.exception()` handler throws, the error is logged but not re-dispatched (preventing infinite recursion).
+:::
+
+## Example: Message Sent
+
+Use `@on.message_sent()` to track or react to individual message deliveries:
+
+```python
+from core.plugin import on
+from core.chat import KiraMessageBatchEvent, MessageChain, KiraIMSentResult
+
+class MyPlugin(BasePlugin):
+    @on.message_sent()
+    async def on_sent(self, event: KiraMessageBatchEvent, action: MessageChain, result: KiraIMSentResult, *args, **kwargs):
+        if result.ok:
+            print(f"Message sent successfully: {result.message_id}")
+        else:
+            print(f"Message send failed: {result.err}")
+```
 
 # Tool Registration
 

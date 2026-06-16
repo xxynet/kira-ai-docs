@@ -14,17 +14,90 @@ from core.plugin import on, Priority
 本项目处于活跃开发期，装饰器系统可能会有变化。
 :::
 
-| 装饰器                   | 触发时机                           | 主要参数                           |
-| ------------------------ | ---------------------------------- | ---------------------------------- |
-| `@on.im_message()`       | IM 消息到达时（最早）              | `event: KiraMessageEvent`          |
-| `@on.message_buffered()` | 消息进入缓冲区后                   | `event: KiraMessageEvent`          |
-| `@on.im_batch_message()` | 消息经 debounce 合并后             | `event: KiraMessageEvent`          |
-| `@on.llm_request()`      | 向 LLM 发送请求前（注入 Prompt）   | `event`, `req: LLMRequest`         |
-| `@on.llm_response()`     | LLM 原始响应返回后                 | `event`, `resp: LLMResponse`       |
-| `@on.after_xml_parse()`  | XML 解析完成后（得到 MessageChain）| `event`, `chain: MessageChain`     |
-| `@on.tool_result()`      | 工具调用返回结果后                 | `event`, `result: ToolResult`      |
-| `@on.step_result()`      | Agent 每步结束后                   | `event`, `resp: LLMResponse`       |
-| `@on.final_result()`     | 最终消息结果生成后                 | `event`, `chain: MessageChain`     |
+### 消息处理事件
+
+| 装饰器                   | 触发时机                           | 处理函数签名                                       |
+| ------------------------ | ---------------------------------- | -------------------------------------------------- |
+| `@on.im_message()`       | IM 消息到达时（最早）              | `(self, event: KiraMessageEvent, *args, **kwargs)`            |
+| `@on.message_buffered()` | 消息进入缓冲区后                   | `(self, sid: str, *args, **kwargs)`                           |
+| `@on.im_batch_message()` | 消息经 debounce 合并后             | `(self, event: KiraMessageBatchEvent, *args, **kwargs)`       |
+| `@on.llm_request()`      | 向 LLM 发送请求前（注入 Prompt）   | `(self, event: KiraMessageBatchEvent, req: LLMRequest, tag_set: TagSet, *args, **kwargs)` |
+| `@on.llm_response()`     | LLM 原始响应返回后                 | `(self, event: KiraMessageBatchEvent, resp: LLMResponse, *args, **kwargs)` |
+| `@on.after_xml_parse()`  | XML 解析完成后（得到 actions 列表）| `(self, event: KiraMessageBatchEvent, actions: list, *args, **kwargs)` |
+| `@on.tool_result()`      | 工具调用返回结果后                 | `(self, event: KiraMessageBatchEvent, result: ToolResult, *args, **kwargs)` |
+| `@on.message_sent()`     | 单条消息发送到 IM 平台后           | `(self, event: KiraMessageBatchEvent, action: MessageChain, result: KiraIMSentResult, *args, **kwargs)` |
+| `@on.step_result()`      | Agent 每步结束后                   | `(self, event: KiraMessageBatchEvent, step_result: KiraStepResult, *args, **kwargs)` |
+| `@on.final_result()`     | 最终消息结果生成后                 | *（当前版本未触发 —— 预留事件）*                    |
+
+### 生命周期事件
+
+| 装饰器               | 触发时机                           | 处理函数签名                       |
+| -------------------- | ---------------------------------- | ---------------------------------- |
+| `@on.loaded()`       | 所有插件加载完成后（无参数）       | `(self, *args, **kwargs)`          |
+| `@on.shutdown()`     | 系统即将关闭时（无参数）           | `(self, *args, **kwargs)`          |
+
+### 错误事件
+
+| 装饰器                | 触发时机                           | 处理函数签名                                       |
+| --------------------- | ---------------------------------- | -------------------------------------------------- |
+| `@on.exception()`     | 任意 Hook 处理函数抛出异常时       | `(self, event, exc_event: KiraExceptionEvent, *args, **kwargs)` |
+
+:::tip
+所有处理函数必须是 `BasePlugin` 子类的 `async` 方法。建议始终接受 `*args, **kwargs` 以保持前向兼容。
+:::
+
+## 消息处理流水线
+
+下图展示了消息处理过程中各事件的触发顺序：
+
+```
+IM 消息到达
+     │
+     ▼
+  @on.im_message()        ← 设置策略：trigger / buffer / flush / discard
+     │
+     ▼
+  [消息缓冲]
+     │
+     ▼
+  @on.message_buffered()  ← 仅传递 sid（轻量通知）
+     │
+     ▼
+  [防抖 / 合并]
+     │
+     ▼
+  @on.im_batch_message()  ← 可访问所有合并后的消息
+     │
+     ▼
+  @on.llm_request()       ← 注入 prompt、tag、tool
+     │
+     ▼
+  [LLM 调用]
+     │
+     ▼
+  @on.llm_response()      ← 读取原始输出、自动修复 XML
+     │
+     ▼
+  [工具执行] ◄──────────► @on.tool_result()  ← 每次工具调用
+     │
+     ▼
+  [XML 解析]
+     │
+     ▼
+  @on.after_xml_parse()   ← 检查/修改解析后的 actions
+     │
+     ▼
+  [发送消息]
+     │
+     ▼
+  @on.message_sent()      ← 每条消息，含发送结果
+     │
+     ▼
+  @on.step_result()       ← Agent 每步结束后
+     │
+     ▼
+  [循环或结束]
+```
 
 ## 优先级
 
@@ -38,6 +111,12 @@ class Priority(IntEnum):
 ```
 
 **数字越大，越先执行。** 未指定时默认为 `MEDIUM`。
+
+:::warning
+`SYS_HIGH` 和 `SYS_LOW` 为内置插件保留，用户插件应使用 `HIGH`、`MEDIUM`、`LOW` 或任意整数值。
+:::
+
+`priority` 参数接受任意整数，不限于 `Priority` 枚举值。例如 `priority=30` 是合法的，会将你的处理函数排在 `MEDIUM(0)` 和 `HIGH(50)` 之间。
 
 ## 示例：监听消息
 
@@ -100,6 +179,72 @@ class MyPlugin(BasePlugin):
 ```
 
 > 两种方式可以混用。方式一适合向已有固定 section（如 `"tools"`、`"memory"`）追加内容；方式二适合插件完整地插入一段独立上下文。
+
+## 示例：生命周期事件
+
+使用 `@on.loaded()` 和 `@on.shutdown()` 处理系统级别的初始化或清理（独立于单个插件的 `initialize()`/`terminate()` 生命周期）：
+
+```python
+from core.plugin import on
+
+class MyPlugin(BasePlugin):
+    @on.loaded()
+    async def on_system_ready(self, *args, **kwargs):
+        # 所有插件已加载完毕 —— 可安全地与其他插件交互
+        other = self.ctx.get_plugin_inst("other_plugin")
+        if other:
+            # 跨插件初始化...
+            pass
+
+    @on.shutdown()
+    async def on_system_shutdown(self, *args, **kwargs):
+        # 系统即将关闭 —— 释放外部资源
+        await self._close_connections()
+```
+
+## 示例：异常处理
+
+使用 `@on.exception()` 捕获并处理其他 Hook 处理函数中的异常，适合用于日志记录、告警或回退逻辑：
+
+```python
+from core.plugin import on
+from core.chat import KiraExceptionEvent
+
+class MyPlugin(BasePlugin):
+    @on.exception()
+    async def on_error(self, event, exc_event: KiraExceptionEvent, *args, **kwargs):
+        # exc_event 包含结构化的错误信息
+        print(f"异常发生在 {exc_event.stage}：{exc_event.name}: {exc_event.message}")
+        # 可用字段：
+        #   exc_event.name      — 异常类名（如 "ValueError"）
+        #   exc_event.message   — str(e)
+        #   exc_event.traceback — 完整的 traceback 字符串
+        #   exc_event.stage     — 触发异常的 EventType（如 "on_llm_request"）
+        #   exc_event.source    — "plugin" 或 "core"
+        #   exc_event.comp_id   — 出错处理函数所属的插件 ID
+        #   exc_event.e         — 原始异常对象
+```
+
+:::tip
+异常处理函数本身受到保护：如果 `@on.exception()` 处理函数抛出异常，错误会被记录但不会再次触发分发（防止无限递归）。
+:::
+
+## 示例：消息发送
+
+使用 `@on.message_sent()` 追踪或响应每条消息的发送状态：
+
+```python
+from core.plugin import on
+from core.chat import KiraMessageBatchEvent, MessageChain, KiraIMSentResult
+
+class MyPlugin(BasePlugin):
+    @on.message_sent()
+    async def on_sent(self, event: KiraMessageBatchEvent, action: MessageChain, result: KiraIMSentResult, *args, **kwargs):
+        if result.ok:
+            print(f"消息发送成功：{result.message_id}")
+        else:
+            print(f"消息发送失败：{result.err}")
+```
 
 # Tool 注册
 
