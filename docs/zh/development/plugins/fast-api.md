@@ -418,3 +418,205 @@ class MyPlugin(BasePlugin):
 async def _init_static(self):
     pass
 ```
+
+# Widget 注册
+
+`@register.widget` 装饰器允许插件在概览（Overview）仪表盘页面注册动态 Widget。Widget 函数在每次 `GET /api/overview` 请求时调用，实现数据的实时展示。
+
+## 导入
+
+```python
+from core.plugin import register
+```
+
+## 装饰器参数
+
+| 参数    | 类型                         | 必填 | 默认值    | 说明                                                        |
+| ------- | ---------------------------- | ---- | --------- | ----------------------------------------------------------- |
+| `label` | `str` 或 `dict[str, str]`   | 是   | —         | Widget 标题，支持多语言 dict                                |
+| `icon`  | `str`                        | 否   | `"Box"`   | Element Plus 图标名（仅小卡片有效）                         |
+| `color` | `str`                        | 否   | `"blue"`  | 主题色：`blue` / `green` / `purple` / `yellow` / `red` / `gray` |
+| `order` | `int`                        | 否   | `100`     | 排序值（越小越靠前）                                        |
+| `size`  | `str`                        | 否   | `"small"` | `"small"`（统计卡片）或 `"wide"`（宽卡片）                 |
+
+## 函数返回值
+
+被装饰的函数必须是**同步**方法，返回一个**普通字符串**：
+
+- **小卡片 Widget**：返回显示值（如 `"42"`、`"3h 20m 15s"`）
+- **宽 Widget**：返回 HTML 内容（如 `"<table>...</table><a class='...'>链接</a>"`）
+
+:::tip 动态刷新
+Widget 函数在每次 API 请求时被调用（默认 30 秒轮询间隔），返回值实时更新，无需刷新页面。
+:::
+
+## 小卡片 Widget
+
+小卡片 Widget 以 4 列网格的形式渲染为统计卡片，与系统内置的统计卡片（运行时长、消息数、适配器数、内存）样式一致。
+
+```
+┌──────────────────────────┐
+│ 标题              [图标]  │
+│ 数值                      │
+└──────────────────────────┘
+```
+
+### 基础示例
+
+```python
+import time
+
+class MyPlugin(BasePlugin):
+    def __init__(self, ctx, cfg):
+        super().__init__(ctx, cfg)
+        self._start_ts = int(time.time())
+
+    @register.widget(
+        label={"zh": "运行时长", "en": "Uptime"},
+        icon="Timer",
+        color="blue",
+        order=200,
+    )
+    def widget_uptime(self) -> str:
+        elapsed = int(time.time()) - self._start_ts
+        m, s = divmod(elapsed, 60)
+        h, m = divmod(m, 60)
+        return f"{h}h {m}m {s}s"
+```
+
+### 多个小卡片 Widget
+
+```python
+@register.widget(
+    label={"zh": "事件计数", "en": "Event Count"},
+    icon="Histogram",
+    color="purple",
+    order=201,
+)
+def widget_event_count(self) -> str:
+    return str(self._event_count)
+```
+
+## 宽 Widget
+
+宽 Widget 以全宽卡片的形式渲染在统计卡片网格下方。宽 Widget 的 `icon` 参数会被忽略。
+
+```
+┌──────────────────────────────────────────────────┐
+│ 标题                                             │
+│ [HTML 内容通过 v-html 渲染]                      │
+└──────────────────────────────────────────────────┘
+```
+
+### 基础示例
+
+```python
+@register.widget(
+    label={"zh": "服务状态", "en": "Service Status"},
+    size="wide",
+    order=300,
+)
+def widget_status(self) -> str:
+    rows = ""
+    for svc in self._get_services():
+        status = "✅" if svc.ok else "❌"
+        rows += f"<tr><td style='padding:4px 12px'>{svc.name}</td>"
+        rows += f"<td style='padding:4px 12px'>{status}</td></tr>"
+    return f"<table style='border-collapse:collapse'>{rows}</table>"
+```
+
+### 带按钮和链接的宽 Widget
+
+宽 Widget 支持丰富的 HTML 内容，包括按钮和链接。使用 **Tailwind CSS 类名** 进行样式设置 —— 它们会通过全局 `.dark` 规则自动适配深色模式。
+
+```python
+@register.widget(
+    label={"zh": "插件注册摘要", "en": "Plugin Registration Summary"},
+    size="wide",
+    order=302,
+)
+def widget_summary(self) -> str:
+    table = "<table style='border-collapse:collapse;margin-bottom:12px'>"
+    table += "<tr><td style='padding:4px 12px'>Tools</td>"
+    table += "<td style='padding:4px 12px;font-weight:600'>5</td></tr>"
+    table += "</table>"
+    btn = (
+        '<a href="https://example.com" target="_blank" rel="noopener" '
+        'class="inline-block px-4 py-2 rounded text-sm font-medium no-underline '
+        'bg-blue-500 hover:bg-blue-600 text-white '
+        'dark:bg-blue-400 dark:hover:bg-blue-300 dark:text-gray-900 '
+        'transition-colors">📖 Documentation</a>'
+    )
+    return table + btn
+```
+
+## 深色模式适配
+
+Widget 内容通过 `v-html` 渲染在 WebUI 中。框架通过两种方式处理深色模式：
+
+1. **裸 HTML 元素**（`<td>`、`<p>`、`<span>` 等）无 CSS 类时，深色模式下自动使用浅色文字
+2. **带 Tailwind CSS 类的元素**（如 `dark:bg-blue-400`、`dark:text-gray-100`）由全局深色模式规则处理
+
+:::warning 避免使用内联样式设置颜色
+不要使用 `style="color: ..."` 设置颜色 —— 内联样式无法响应深色模式。请使用 Tailwind CSS 类名替代：
+
+```html
+<!-- ✅ 正确：自动适配深色模式 -->
+<a class="text-gray-900 dark:text-gray-100">...</a>
+
+<!-- ❌ 错误：始终深色文字，深色模式下不可见 -->
+<a style="color: #1a1a1a">...</a>
+```
+
+对于没有添加任何类名的裸 `<td>`、`<p>` 等元素，深色模式文字颜色会被自动处理，无需额外样式。
+:::
+
+## 图标名称
+
+图标使用 [Element Plus 图标组件名](https://element-plus.org/zh-CN/component/icon.html#图标集合)。常用选项：
+
+| 图标名           | 说明         |
+| ---------------- | ------------ |
+| `Box`            | 默认 / 通用  |
+| `Timer`          | 时钟 / 时长  |
+| `Histogram`      | 统计         |
+| `ChatDotRound`   | 消息         |
+| `DataAnalysis`   | 仪表盘       |
+| `Monitor`        | 系统         |
+| `Star`           | 收藏         |
+| `Warning`        | 警告         |
+| `Coin`           | 金币         |
+| `Connection`     | 网络         |
+
+:::tip 回退机制
+如果图标名称在映射中不存在，会回退到 `Box`。
+:::
+
+## 多语言 label
+
+`label` 支持与 `PageMenu.label` 相同的多语言格式。WebUI 根据当前语言自动选取，fallback 链：当前语言 → `en` → 第一个可用值。
+
+```python
+@register.widget(
+    label={"zh": "消息速率", "en": "Message Rate"},
+    icon="ChatDotRound",
+    color="green",
+)
+def widget_rate(self) -> str:
+    return "120/min"
+```
+
+也支持普通字符串（不翻译）：
+
+```python
+@register.widget(label="Simple Counter", icon="Histogram")
+def widget_count(self) -> str:
+    return "42"
+```
+
+## Widget 生命周期
+
+- Widget 注册发生在**导入时**（装饰器触发时）
+- Widget 函数在**请求时**被调用（每次 `GET /api/overview`）
+- **已禁用插件**的 Widget 会自动隐藏
+- 插件卸载或重载时，Widget 数据会被自动清理

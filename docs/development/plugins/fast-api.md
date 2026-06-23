@@ -418,3 +418,205 @@ With `html=True`, accessing `/page/plugin/my_plugin/` will serve `dist/index.htm
 async def _init_static(self):
     pass
 ```
+
+# Widget Registration
+
+The `@register.widget` decorator allows plugins to register dynamic widgets on the Overview dashboard page. Widget functions are called on each `GET /api/overview` request, enabling real-time data display.
+
+## Import
+
+```python
+from core.plugin import register
+```
+
+## Decorator Parameters
+
+| Parameter | Type                         | Required | Default   | Description                                                  |
+| --------- | ---------------------------- | -------- | --------- | ------------------------------------------------------------ |
+| `label`   | `str` or `dict[str, str]`   | Yes      | —         | Widget title, supports i18n dict                             |
+| `icon`    | `str`                        | No       | `"Box"`   | Element Plus icon name (small widgets only)                  |
+| `color`   | `str`                        | No       | `"blue"`  | Theme color: `blue` / `green` / `purple` / `yellow` / `red` / `gray` |
+| `order`   | `int`                        | No       | `100`     | Sort position (lower = higher)                               |
+| `size`    | `str`                        | No       | `"small"` | `"small"` (stat card) or `"wide"` (full-width card)          |
+
+## Function Return Value
+
+The decorated function must be a **synchronous** method that returns a **plain string**:
+
+- **Small widgets**: Return the display value (e.g. `"42"`, `"3h 20m 15s"`)
+- **Wide widgets**: Return HTML content (e.g. `"<table>...</table><a class='...'>Link</a>"`)
+
+:::tip Dynamic Refresh
+Widget functions are called on each API request (default 30-second polling interval). Return values update in real-time without page reload.
+:::
+
+## Small Widgets
+
+Small widgets render as stat cards in a 4-column grid, matching the built-in system stat cards (uptime, messages, adapters, memory).
+
+```
+┌──────────────────────────┐
+│ Label            [icon]  │
+│ Value                    │
+└──────────────────────────┘
+```
+
+### Basic Example
+
+```python
+import time
+
+class MyPlugin(BasePlugin):
+    def __init__(self, ctx, cfg):
+        super().__init__(ctx, cfg)
+        self._start_ts = int(time.time())
+
+    @register.widget(
+        label={"zh": "运行时长", "en": "Uptime"},
+        icon="Timer",
+        color="blue",
+        order=200,
+    )
+    def widget_uptime(self) -> str:
+        elapsed = int(time.time()) - self._start_ts
+        m, s = divmod(elapsed, 60)
+        h, m = divmod(m, 60)
+        return f"{h}h {m}m {s}s"
+```
+
+### Multiple Small Widgets
+
+```python
+@register.widget(
+    label={"zh": "事件计数", "en": "Event Count"},
+    icon="Histogram",
+    color="purple",
+    order=201,
+)
+def widget_event_count(self) -> str:
+    return str(self._event_count)
+```
+
+## Wide Widgets
+
+Wide widgets render as full-width cards below the stat card grid. The `icon` parameter is ignored for wide widgets.
+
+```
+┌──────────────────────────────────────────────────┐
+│ Label                                            │
+│ [HTML content rendered via v-html]               │
+└──────────────────────────────────────────────────┘
+```
+
+### Basic Example
+
+```python
+@register.widget(
+    label={"zh": "服务状态", "en": "Service Status"},
+    size="wide",
+    order=300,
+)
+def widget_status(self) -> str:
+    rows = ""
+    for svc in self._get_services():
+        status = "✅" if svc.ok else "❌"
+        rows += f"<tr><td style='padding:4px 12px'>{svc.name}</td>"
+        rows += f"<td style='padding:4px 12px'>{status}</td></tr>"
+    return f"<table style='border-collapse:collapse'>{rows}</table>"
+```
+
+### Wide Widget with Buttons and Links
+
+Wide widgets support rich HTML content including buttons and links. Use **Tailwind CSS classes** for styling — they automatically adapt to dark mode via the global `.dark` overrides.
+
+```python
+@register.widget(
+    label={"zh": "插件注册摘要", "en": "Plugin Registration Summary"},
+    size="wide",
+    order=302,
+)
+def widget_summary(self) -> str:
+    table = "<table style='border-collapse:collapse;margin-bottom:12px'>"
+    table += "<tr><td style='padding:4px 12px'>Tools</td>"
+    table += "<td style='padding:4px 12px;font-weight:600'>5</td></tr>"
+    table += "</table>"
+    btn = (
+        '<a href="https://example.com" target="_blank" rel="noopener" '
+        'class="inline-block px-4 py-2 rounded text-sm font-medium no-underline '
+        'bg-blue-500 hover:bg-blue-600 text-white '
+        'dark:bg-blue-400 dark:hover:bg-blue-300 dark:text-gray-900 '
+        'transition-colors">📖 Documentation</a>'
+    )
+    return table + btn
+```
+
+## Dark Mode Support
+
+Widget content is rendered via `v-html` inside the WebUI. The framework handles dark mode in two ways:
+
+1. **Bare HTML elements** (`<td>`, `<p>`, `<span>`, etc.) without CSS classes automatically get light-colored text in dark mode
+2. **Elements with Tailwind CSS classes** (e.g. `dark:bg-blue-400`, `dark:text-gray-100`) are handled by the global dark-mode rules
+
+:::warning Avoid Inline Styles for Colors
+Do not use inline `style="color: ..."` for colors — inline styles cannot respond to dark mode. Use Tailwind CSS classes instead:
+
+```html
+<!-- ✅ Correct: adapts to dark mode -->
+<a class="text-gray-900 dark:text-gray-100">...</a>
+
+<!-- ❌ Wrong: always dark text, breaks in dark mode -->
+<a style="color: #1a1a1a">...</a>
+```
+
+For bare `<td>`, `<p>`, etc. without any class, dark mode text color is handled automatically — no extra styling needed.
+:::
+
+## Icon Names
+
+Icons use [Element Plus icon component names](https://element-plus.org/en-US/component/icon.html#icon-collection). Common choices:
+
+| Icon Name        | Description       |
+| ---------------- | ----------------- |
+| `Box`            | Default / generic |
+| `Timer`          | Clock / duration  |
+| `Histogram`      | Statistics        |
+| `ChatDotRound`   | Messages          |
+| `DataAnalysis`   | Dashboard         |
+| `Monitor`        | System            |
+| `Star`           | Favorites         |
+| `Warning`        | Alerts            |
+| `Coin`           | Currency          |
+| `Connection`     | Network           |
+
+:::tip Fallback
+If the icon name is not found in the mapping, it falls back to `Box`.
+:::
+
+## Multi-language Label
+
+`label` supports the same i18n format as `PageMenu.label`. The WebUI automatically selects the matching translation with fallback chain: current locale → `en` → first available value.
+
+```python
+@register.widget(
+    label={"zh": "消息速率", "en": "Message Rate"},
+    icon="ChatDotRound",
+    color="green",
+)
+def widget_rate(self) -> str:
+    return "120/min"
+```
+
+A plain string is also accepted (no translation):
+
+```python
+@register.widget(label="Simple Counter", icon="Histogram")
+def widget_count(self) -> str:
+    return "42"
+```
+
+## Widget Lifecycle
+
+- Widget registration happens at **import time** (when the decorator fires)
+- Widget functions are called at **request time** (on each `GET /api/overview`)
+- Widgets from **disabled plugins** are automatically hidden
+- Widget data is cleaned up when a plugin is unloaded or reloaded

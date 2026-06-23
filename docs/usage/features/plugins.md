@@ -28,6 +28,10 @@ Plugins can expose HTTP API endpoints via FastAPI, enabling external systems to 
 
 Plugins can register custom web pages that are embedded into KiraAI's WebUI, with built-in theme adaptation and a Bridge SDK for seamless frontend-backend communication.
 
+### Overview Widgets
+
+Plugins can register dynamic widgets on the Overview dashboard page — both compact stat cards and full-width HTML cards. Widget functions are called in real-time on each dashboard refresh, with built-in dark mode support via Tailwind CSS.
+
 ### Configuration System
 
 Plugins can define a configuration schema (`schema.json`) with 15+ field types, providing a rich settings UI in the WebUI without writing any frontend code.
