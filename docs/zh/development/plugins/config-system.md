@@ -34,6 +34,7 @@ class MyPlugin(BasePlugin):
 | `textarea`     | 多行纯文本输入                 | —                         |
 | `markdown`     | Markdown 编辑器                | —                         |
 | `model_select` | 模型选择器                     | `model_type: "llm"/"tts"/"stt"/"image"/"embedding"/"rerank"/"video"` |
+| `persona_select` | 人设选择器（保存人设 ID）    | —                                                       |
 | `section`      | 可折叠分组区域                 | `collapsed`, `fields`     |
 
 ## 示例 schema.json

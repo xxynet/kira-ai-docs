@@ -34,6 +34,7 @@ class MyPlugin(BasePlugin):
 | `textarea`     | Multi-line plain text input          | —                         |
 | `markdown`     | Markdown editor                      | —                         |
 | `model_select` | Model selector                       | `model_type: "llm"/"tts"/"stt"/"image"/"embedding"/"rerank"/"video"` |
+| `persona_select` | Persona selector (saves persona ID) | —                       |
 | `section`      | Collapsible section for grouping fields | `collapsed`, `fields`  |
 
 ## Example schema.json
