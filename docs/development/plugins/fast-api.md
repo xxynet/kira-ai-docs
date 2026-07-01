@@ -116,6 +116,94 @@ async def public_info(self):
     return {"version": "1.0.0"}
 ```
 
+# WebSocket Registration
+
+The `@register.ws` decorator allows plugins to expose WebSocket endpoints, automatically integrated into the WebUI's FastAPI application. All plugin WebSocket endpoints are prefixed with `/ws/plugin/{plugin_id}/`.
+
+## Import
+
+```python
+from core.plugin import register
+```
+
+## Decorator Parameters
+
+| Parameter | Type   | Required | Default | Description                            |
+| --------- | ------ | -------- | ------- | -------------------------------------- |
+| `path`    | `str`  | Yes      | —       | Endpoint path (e.g., `"/chat"`, `"/sync"`) |
+| `auth`    | `bool` | No       | `True`  | Require JWT authentication             |
+
+## Basic Usage
+
+```python
+from fastapi import WebSocket, WebSocketDisconnect
+
+@register.ws("/chat")
+async def ws_chat(self, ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_text()
+            await ws.send_text(f"Received: {data}")
+    except WebSocketDisconnect:
+        pass
+```
+
+The endpoint is accessible at `ws://<host>/ws/plugin/<plugin_id>/chat`.
+
+## Authentication
+
+When `auth=True` (default), the framework validates the JWT token during the WebSocket handshake **before** the endpoint executes. The client must provide the token via one of:
+
+1. **Query parameter** (recommended for browser clients):
+   ```
+   ws://localhost:8080/ws/plugin/my_plugin/chat?token=<jwt>
+   ```
+
+2. **Authorization header:**
+   ```
+   Authorization: Bearer <jwt>
+   ```
+
+On auth failure, the connection is closed with code `4003`.
+
+When `auth=False`, the endpoint is publicly accessible without authentication:
+
+```python
+@register.ws("/echo", auth=False)
+async def ws_echo(self, ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_text()
+            await ws.send_text(f"echo: {data}")
+    except WebSocketDisconnect:
+        pass
+```
+
+## JSON Communication
+
+For structured data exchange, use `receive_json` / `send_json`:
+
+```python
+@register.ws("/sync")
+async def ws_sync(self, ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_json()
+            result = process(data)
+            await ws.send_json({"status": "ok", "result": result})
+    except WebSocketDisconnect:
+        pass
+```
+
+## Notes
+
+- Methods in the main class use `self` as the first parameter, same as `@register.api`
+- If the plugin is disabled at runtime, incoming connections are automatically closed with code `1011`
+- WebSocket endpoints are re-registered when a plugin is re-enabled after being disabled
+
 # Page and Static Registration
 
 Plugins can register custom WebUI pages and serve static resources using `@register.page` and `@register.static` decorators.

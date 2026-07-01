@@ -116,6 +116,94 @@ async def public_info(self):
     return {"version": "1.0.0"}
 ```
 
+# WebSocket 注册
+
+`@register.ws` 装饰器允许插件暴露 WebSocket 端点，自动集成到 WebUI 的 FastAPI 应用中。所有插件 WebSocket 端点的路径前缀为 `/ws/plugin/{plugin_id}/`。
+
+## 导入
+
+```python
+from core.plugin import register
+```
+
+## 装饰器参数
+
+| 参数   | 类型    | 必填 | 默认值 | 说明                                     |
+| ------ | ------- | ---- | ------ | ---------------------------------------- |
+| `path` | `str`   | 是   | —      | 端点路径（如 `"/chat"`、`"/sync"`）       |
+| `auth` | `bool`  | 否   | `True` | 是否需要 JWT 认证                        |
+
+## 基础用法
+
+```python
+from fastapi import WebSocket, WebSocketDisconnect
+
+@register.ws("/chat")
+async def ws_chat(self, ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_text()
+            await ws.send_text(f"Received: {data}")
+    except WebSocketDisconnect:
+        pass
+```
+
+端点可通过 `ws://<host>/ws/plugin/<plugin_id>/chat` 访问。
+
+## 认证
+
+当 `auth=True`（默认）时，框架会在 WebSocket 握手阶段 **先于** 端点执行验证 JWT 令牌。客户端必须通过以下方式之一提供令牌：
+
+1. **查询参数**（推荐用于浏览器客户端）：
+   ```
+   ws://localhost:8080/ws/plugin/my_plugin/chat?token=<jwt>
+   ```
+
+2. **Authorization 请求头：**
+   ```
+   Authorization: Bearer <jwt>
+   ```
+
+认证失败时，连接将以 `4003` 关闭码关闭。
+
+当 `auth=False` 时，端点无需认证即可公开访问：
+
+```python
+@register.ws("/echo", auth=False)
+async def ws_echo(self, ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_text()
+            await ws.send_text(f"echo: {data}")
+    except WebSocketDisconnect:
+        pass
+```
+
+## JSON 通信
+
+进行结构化数据交换时，使用 `receive_json` / `send_json`：
+
+```python
+@register.ws("/sync")
+async def ws_sync(self, ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            data = await ws.receive_json()
+            result = process(data)
+            await ws.send_json({"status": "ok", "result": result})
+    except WebSocketDisconnect:
+        pass
+```
+
+## 注意事项
+
+- 主类中的方法以 `self` 作为第一个参数，与 `@register.api` 一致
+- 如果插件在运行时被禁用，新接入的连接将自动以 `1011` 关闭码关闭
+- 插件重新启用后，WebSocket 端点会自动重新注册
+
 # 页面和静态资源注册
 
 插件可以使用 `@register.page` 和 `@register.static` 装饰器来注册自定义 WebUI 页面和提供静态资源。
